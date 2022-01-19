@@ -1,6 +1,6 @@
 {
   "name": "firestore-rdf",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Command line tool for renaming document field name of Firestore.",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",

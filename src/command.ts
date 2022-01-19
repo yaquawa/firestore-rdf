@@ -21,6 +21,7 @@ export default async function runCommand() {
 
 async function getInputForSetupApp() {
   const configCache = new ConfigCache<{
+    projectId: string
     privateKeyFilePath: string
   }>({ vendor: 'firestore-rdf' })
 
@@ -29,6 +30,7 @@ async function getInputForSetupApp() {
   const input = await inquirer.prompt<{
     useEmulator: boolean
     emulatorHost: string
+    projectId: string
     privateKeyFilePath: string
   }>([
     {
@@ -51,6 +53,19 @@ async function getInputForSetupApp() {
 
     {
       type: 'input',
+      name: 'projectId',
+      message: 'Input your project-id.',
+      validate: requiredField(),
+      default: () => {
+        return cache?.projectId
+      },
+      when(answers) {
+        return answers.useEmulator
+      },
+    },
+
+    {
+      type: 'input',
       name: 'privateKeyFilePath',
       message: 'Input the path of your private key file.',
       default: () => {
@@ -63,7 +78,10 @@ async function getInputForSetupApp() {
     },
   ])
 
-  configCache.write({ privateKeyFilePath: input.privateKeyFilePath })
+  configCache.write({
+    privateKeyFilePath: input.privateKeyFilePath,
+    projectId: input.projectId,
+  })
 
   return input
 }
@@ -151,15 +169,17 @@ async function getCollectionName(firestore: Firestore) {
 function setupApp({
   useEmulator,
   emulatorHost,
+  projectId,
   privateKeyFilePath,
 }: {
   useEmulator: boolean
   emulatorHost: string
+  projectId: string
   privateKeyFilePath: string
 }) {
   if (useEmulator) {
     process.env.FIRESTORE_EMULATOR_HOST = emulatorHost
-    process.env.GCLOUD_PROJECT = 'firestore-rdf'
+    process.env.GOOGLE_CLOUD_PROJECT = projectId
   } else {
     process.env.GOOGLE_APPLICATION_CREDENTIALS = privateKeyFilePath
   }
